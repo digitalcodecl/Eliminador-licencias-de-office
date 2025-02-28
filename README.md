@@ -10,7 +10,7 @@ Este script permite eliminar todas las licencias activas de Microsoft Office en 
 
 1️⃣ Descargar el archivo
 
-git clone https://github.com/digitalcodecl/eliminar-licencias-office.git
+git clone [https://github.com/digitalcodecl/eliminar-licencias-office.git](https://github.com/digitalcodecl/Eliminador-licencias-de-office.git)
 cd eliminador-licencias-office
 
 2️⃣ Ejecutar el script
