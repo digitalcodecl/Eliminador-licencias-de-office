@@ -14,19 +14,22 @@ if %errorLevel% neq 0 (
 
 echo.
 echo =====================================
-echo      🗑️  ELIMINANDO LICENCIAS DE OFFICE
+echo      🗑️  ELIMINADOR DE LICENCIAS DE OFFICE
 echo =====================================
 echo.
 
 :: Buscar y ejecutar ospp.vbs en versiones conocidas de Office
 set "osppPath="
+set "officeVersion="
 
-for %%a in (4,5,6) do (
-    if exist "%ProgramFiles%\Microsoft Office\Office1%%a\ospp.vbs" (
-        set "osppPath=%ProgramFiles%\Microsoft Office\Office1%%a\ospp.vbs"
+for %%a in (16,15,14,24) do (
+    if exist "%ProgramFiles%\Microsoft Office\Office%%a\ospp.vbs" (
+        set "osppPath=%ProgramFiles%\Microsoft Office\Office%%a\ospp.vbs"
+        set "officeVersion=Office %%a (64-bit)"
     )
-    if exist "%ProgramFiles(x86)%\Microsoft Office\Office1%%a\ospp.vbs" (
-        set "osppPath=%ProgramFiles(x86)%\Microsoft Office\Office1%%a\ospp.vbs"
+    if exist "%ProgramFiles(x86)%\Microsoft Office\Office%%a\ospp.vbs" (
+        set "osppPath=%ProgramFiles(x86)%\Microsoft Office\Office%%a\ospp.vbs"
+        set "officeVersion=Office %%a (32-bit)"
     )
 )
 
@@ -36,14 +39,32 @@ if not defined osppPath (
     exit /b
 )
 
-:: Obtener las claves de producto activas correctamente
+:: Mostrar la versión de Office detectada
+echo 🔍 Versión de Office detectada: %officeVersion%
+echo.
+
+:: Obtener las licencias activas con su nombre y clave
 echo [1/3] Obteniendo licencias activas...
 setlocal enabledelayedexpansion
 set "licencias="
+set "licenciasNombres="
 
-:: Extraer los últimos 5 caracteres de cada clave
-for /f "tokens=8" %%B in ('cscript //Nologo "%osppPath%" /dstatus ^| findstr /b /c:"Last 5"') do (
-    set "licencias=!licencias! %%B"
+:: Extraer nombres de licencia (LICENSE NAME)
+for /f "tokens=3*" %%A in ('cscript //Nologo "%osppPath%" /dstatus ^| findstr /C:"LICENSE NAME"') do (
+    set "licenciasNombres=!licenciasNombres! %%A %%B|"
+)
+
+:: Extraer la línea completa que contiene "Last 5 characters"
+for /f "delims=" %%X in ('cscript //Nologo "%osppPath%" /dstatus ^| findstr /C:"Last 5 characters"') do (
+    set "lineaClave=%%X"
+)
+
+:: Extraer solo los últimos 5 caracteres de la línea capturada, eliminando espacios
+for /f "tokens=*" %%Y in ("%lineaClave%") do (
+    set "clave=%%Y"
+    set "clave=!clave:~-5!"
+    set "clave=!clave: =!"  :: Elimina espacios en blanco
+    set "licencias=!licencias!!clave!|"
 )
 
 :: Verificar si se encontraron claves reales
@@ -53,10 +74,16 @@ if "%licencias%"=="" (
     exit /b
 )
 
-:: Mostrar las claves detectadas antes de eliminarlas
+:: Mostrar las licencias detectadas antes de eliminarlas
 echo =====================================
-echo  🔎 Se encontraron las siguientes licencias activas:
-for %%C in (%licencias%) do echo - %%C
+echo  🔎 Licencias activas encontradas:
+set "count=1"
+for /f "delims=|" %%C in ("%licencias%") do (
+    for /f "delims=|" %%N in ("%licenciasNombres%") do (
+        echo [%count%] %%N - Clave: %%C
+        set /a count+=1
+    )
+)
 echo =====================================
 set /p confirm="¿Deseas continuar y eliminarlas? (S/N): "
 if /i "%confirm%" neq "S" exit /b
@@ -64,10 +91,12 @@ if /i "%confirm%" neq "S" exit /b
 :: Eliminar cada licencia encontrada y guardar en variable
 echo [2/3] Eliminando licencias...
 set "eliminadas="
-for %%C in (%licencias%) do (
-    echo 🔴 Eliminando clave: %%C...
-    cscript //Nologo "%osppPath%" /unpkey:%%C > nul 2>&1
-    set "eliminadas=!eliminadas! %%C "
+for /f "delims=|" %%C in ("%licencias%") do (
+    if not "%%C"=="" (
+        echo 🔴 Eliminando clave: %%C...
+        cscript //Nologo "%osppPath%" /unpkey:%%C > nul 2>&1
+        set "eliminadas=!eliminadas!%%C|"
+    )
 )
 
 :: Forzar actualización de estado de activación
@@ -77,9 +106,14 @@ cscript //Nologo "%osppPath%" /act > nul 2>&1
 :: Mostrar las licencias eliminadas
 echo =====================================
 echo  ✅ LICENCIAS ELIMINADAS:
-for %%D in (%eliminadas%) do echo - %%D
+set "count=1"
+for /f "delims=|" %%D in ("%eliminadas%") do (
+    for /f "delims=|" %%N in ("%licenciasNombres%") do (
+        echo [%count%] %%N - Clave: %%D
+        set /a count+=1
+    )
+)
 echo =====================================
 
 echo ✅ PROCESO COMPLETADO
 pause
-
