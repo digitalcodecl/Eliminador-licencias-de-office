@@ -4,7 +4,7 @@ Este script permite eliminar todas las licencias activas de Microsoft Office en 
 
 🚀 Características
 
-✅ Elimina todas las licencias activas de Office✅ Funciona en Office 2010, 2013, 2016, 2019, 2021 y Office 365✅ Se ejecuta automáticamente con permisos de administrador✅ Muestra las claves detectadas antes de eliminarlas✅ Actualiza el estado de activación después de la eliminación✅ No guarda archivos extra, muestra en pantalla las licencias eliminadas
+✅ Elimina todas las licencias activas de Office✅ Funciona en Office 2010, 2013, 2016, 2019, 2021, 2021 LTSC, Office 2024 LTSC y Office 365✅ Se ejecuta automáticamente con permisos de administrador✅ Muestra las claves detectadas antes de eliminarlas✅ Actualiza el estado de activación después de la eliminación✅ No guarda archivos extra, muestra en pantalla las licencias eliminadas
 
 📥 Instalación
 
