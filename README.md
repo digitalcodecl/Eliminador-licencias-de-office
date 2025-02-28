@@ -48,6 +48,15 @@ Este script elimina permanentemente las licencias de Office en el equipo. Asegú
 
 Este proyecto se distribuye bajo la licencia GNU General Public License v3.0.
 
+📖 Referencias
+
+Este script está basado en los archivos originales de Microsoft y en el uso del script ospp.vbs incluido en la instalación de Office. Para más información, puedes consultar la documentación oficial de Microsoft en:
+
+Microsoft Office Activation Scripts
+https://learn.microsoft.com/es-es/office/volume-license-activation/tools-to-manage-volume-activation-of-office
+
+ospp.vbs Documentation
+
 ⭐ Contribuir
 
 ¡Las contribuciones son bienvenidas! Puedes:
