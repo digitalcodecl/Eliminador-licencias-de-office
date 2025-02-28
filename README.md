@@ -46,7 +46,7 @@ Este script elimina permanentemente las licencias de Office en el equipo. Asegú
 
 📝 Licencia
 
-Este proyecto se distribuye bajo la licencia MIT.
+Este proyecto se distribuye bajo la licencia GNU General Public License v3.0.
 
 ⭐ Contribuir
 
