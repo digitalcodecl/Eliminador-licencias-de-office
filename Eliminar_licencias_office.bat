@@ -29,18 +29,11 @@ echo Creado por: Digitalcode SPA, Chile
 echo Fecha de creación: 28 de febrero de 2025
 echo.
 
-:: Buscar y ejecutar ospp.vbs en versiones conocidas de Office
+:: Buscar ospp.vbs en Program Files y Program Files (x86)
 set "osppPath="
-set "officeVersion="
-
-for %%a in (16,15,14,24) do (
-    if exist "%ProgramFiles%\Microsoft Office\Office%%a\ospp.vbs" (
-        set "osppPath=%ProgramFiles%\Microsoft Office\Office%%a\ospp.vbs"
-        set "officeVersion=Office %%a (64-bit)"
-    )
-    if exist "%ProgramFiles(x86)%\Microsoft Office\Office%%a\ospp.vbs" (
-        set "osppPath=%ProgramFiles(x86)%\Microsoft Office\Office%%a\ospp.vbs"
-        set "officeVersion=Office %%a (32-bit)"
+for %%d in ("%ProgramFiles%" "%ProgramFiles(x86)%") do (
+    for /f "delims=" %%p in ('where /r "%%~d\Microsoft Office" ospp.vbs 2^>nul') do (
+        if not defined osppPath set "osppPath=%%p"
     )
 )
 
@@ -52,8 +45,8 @@ if not defined osppPath (
     exit /b
 )
 
-:: Mostrar la versión de Office detectada
-echo Versión de Office detectada: %officeVersion%
+:: Mostrar la ruta encontrada
+echo Ruta de ospp.vbs detectada: %osppPath%
 echo.
 
 :: Obtener las licencias en el sistema
@@ -74,7 +67,7 @@ for /f "tokens=3*" %%A in ('cscript //Nologo "%osppPath%" /dstatus ^| findstr /C
     set "licenciasNombres[!index!]=%%A %%B"
 )
 
-:: Extraer claves y estados
+:: Extraer claves
 set "index=0"
 for /f "delims=" %%X in ('cscript //Nologo "%osppPath%" /dstatus ^| findstr /C:"Last 5 characters"') do (
     set /a index+=1
@@ -87,6 +80,7 @@ for /f "delims=" %%X in ('cscript //Nologo "%osppPath%" /dstatus ^| findstr /C:"
     )
 )
 
+:: Extraer estados
 set "index=0"
 for /f "tokens=3" %%E in ('cscript //Nologo "%osppPath%" /dstatus ^| findstr /C:"LICENSE STATUS"') do (
     set /a index+=1
@@ -98,7 +92,7 @@ for /f "tokens=3" %%E in ('cscript //Nologo "%osppPath%" /dstatus ^| findstr /C:
     )
 )
 
-:: Verificar si hay licencias en el sistema
+:: Verificar si hay licencias
 if "%index%"=="0" (
     echo No se encontraron licencias en el sistema.
     echo.
@@ -106,7 +100,7 @@ if "%index%"=="0" (
     exit /b
 )
 
-:: Imprimir licencias con separación clara
+:: Imprimir licencias
 echo.
 echo ===================================================
 echo         LICENCIAS ENCONTRADAS EN EL SISTEMA
@@ -125,7 +119,6 @@ echo.
 :seleccionar
 set /p seleccion="Ingrese el número de la licencia que desea eliminar (o presione Enter para salir): "
 
-:: Si el usuario presiona Enter sin escribir nada, salir del script
 if "%seleccion%"=="" (
     echo.
     echo No se seleccionó ninguna licencia. Saliendo...
@@ -134,7 +127,6 @@ if "%seleccion%"=="" (
     exit /b
 )
 
-:: Verificar que la selección sea válida
 if %seleccion% GTR %index% (
     echo.
     echo ERROR: Selección inválida. Inténtelo de nuevo.
@@ -147,7 +139,7 @@ echo.
 set /p confirmar="¿Seguro que desea eliminar esta licencia? (S/N): "
 if /i "%confirmar%" neq "S" goto seleccionar
 
-:: Proceso de eliminación
+:: Eliminar licencia
 cls
 echo.
 echo ===================================================
@@ -159,13 +151,13 @@ echo Eliminando clave: %claveEliminar%...
 echo.
 cscript //Nologo "%osppPath%" /unpkey:%claveEliminar% > nul 2>&1
 
-:: Forzar actualización de estado de activación sin ejecutar de nuevo todo el script
+:: Actualizar estado
 echo.
 echo [3/3] Actualizando estado de activación...
 echo.
 cscript //Nologo "%osppPath%" /act > nul 2>&1
 
-:: Confirmación de eliminación
+:: Confirmación
 echo.
 echo ===================================================
 echo               LICENCIA ELIMINADA
@@ -176,7 +168,7 @@ echo Clave eliminada: %claveEliminar%
 echo --------------------------------------------------
 echo.
 
-:: Preguntar si desea eliminar otra licencia
+:: Repetir
 set /p continuar="¿Desea eliminar otra licencia? (S/N): "
 if /i "%continuar%"=="S" goto get_licenses
 
